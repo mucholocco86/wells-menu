@@ -18,18 +18,25 @@ default persistent.wells_dual_dialogue_offset = 200 # Valor inicial para separar
 default persistent.wells_dual_dialog_offset = 300
 default persistent.wells_dual_dialogue_fix = False
 
+################################################################################
+##                            DEVELOPER CONFIG                                ##
+################################################################################
+
 init 999 python:
+    config.language = "brazil"
     config.developer = True
     config.console = True
     config.rollback_enabled = True
-    config.language = "pt_br_anubisbr"
     config.hard_rollback_limit = 128
     config.rollback_length = 128
 
+################################################################################
+##                              END DEVELOPER                                 ##
+################################################################################   
 init python:
     import os
 
-    # --- FUNÇÕES ORIGINAIS MANTIDAS ---
+    # --- FUNÇÕES PERFORMANCE ETC ---
     def toggle_power_save():
         if preferences.gl_framerate == 30:
             preferences.gl_framerate = None 
@@ -120,38 +127,9 @@ screen wells_menu_language():
                 # --- COLUNA 1: SISTEMA (IDIOMA E FONTES) ---
                 vbox:
                     xsize 420 spacing 15 # Aumentei levemente para acomodar o seletor
-                    label _("SISTEMA") xalign 0.5 text_size 26 text_color "#347bff"
-                    # --- SEU NOVO BLOCO DE IDIOMAS INTEGRADO ---
-                    vbox:
-                        xalign 0.5 spacing 10
-                        vbox:
-                            spacing 2
-                            # Ajuste dinâmico de largura mantendo sua lógica
-                            if renpy.variant("small"):
-                                xsize 400 # Adaptado para caber na coluna mobile
-                            else:
-                                xsize 380 
-
-                            style_prefix "radio"
-                            label _("LANGUAGE SELECT") xalign 0.5 text_size 26 text_color "#347bff"
-
-                            $ langs = get_all_languages()
-                            for lang in langs:
-                                textbutton "[lang]".capitalize():
-                                    action Language(None if lang=="Default" else lang)
-                                    text_idle_color "#ffffff"
-                                    text_hover_color "#ff0000"
-                                    text_selected_idle_color "#2bff00"
-                                    text_selected_hover_color "#2bff00"
-                                    text_size 22
-                                    xalign 0.5
-
-                            null height 2
-
-                    null height 10
+                    label _("FONTS") xalign 0.5 text_size 26 text_color "#347bff"
 
                     # --- SEÇÃO DE FONTES (MANTIDA) ---
-                    label _("CUSTOM FONTS") xalign 0.5 text_size 26 text_color "#347bff" 
                     frame:
                         xsize 380 ysize 220 background Solid("#00000066")
                         viewport:
@@ -171,38 +149,17 @@ screen wells_menu_language():
                 # --- COLUNA 2: TODOS OS SLIDERS (CONTROLES) ---
                 vbox:
                     xsize 420 spacing 8
-                    label _("CONTROLES") xalign 0.5 text_size 26 text_color "#347bff"
+                    label _("SOUNDS") xalign 0.5 text_size 26 text_color "#347bff"
 
                     # Agrupamento de Áudio
                     vbox spacing 4:
-                        label _("Música") text_size 24 text_color "#2cf1ff"
+                        label _("Music") text_size 24 text_color "#2cf1ff"
                         bar value Preference("music volume") xsize 400
-                        label _("Sons") text_size 24 text_color "#2cf1ff"
+                        label _("SFX") text_size 24 text_color "#2cf1ff"
                         bar value Preference("sound volume") xsize 400
-                        label _("Voz") text_size 24 text_color "#2cf1ff"
+                        label _("Voice") text_size 24 text_color "#2cf1ff"
                         bar value Preference("voice volume") xsize 400
 
-                    null height 10
-                    
-                    # Agrupamento de Texto (Nome e Diálogo)
-                    vbox spacing 4:
-                        label _("Tam. Nome: [persistent.pref_text_size_label]") text_size 24 text_color "#2cf1ff"
-                        bar value FieldValue(persistent, 'pref_text_size_label', range=60, step=2) xsize 400
-                        label _("Tam. Diálogo: [persistent.pref_text_size_dialogue]") text_size 24 text_color "#2cf1ff"
-                        bar value FieldValue(persistent, 'pref_text_size_dialogue', range=60, step=2) xsize 400
-                        label _("Velocidade do texto") text_size 24 text_color "#2cf1ff"
-                        bar value Preference("text speed") xsize 400
-                        label _("Tempo do texto") text_size 24 text_color "#2cf1ff"
-                        bar value Preference("auto-forward time") xsize 400
-
-
-                # --- COLUNA 3: OPÇÕES (BOTÕES E EXTRAS) ---
-                vbox:
-                    xsize 380 spacing 15
-                    label _("OPÇÕES") xalign 0.5 text_size 26 text_color "#347bff"
-                        
-
-                    # Seção MUTE
                     vbox spacing 5:
                         textbutton _("     (MUTE)     "):
                             action Preference("all mute", "toggle")
@@ -211,6 +168,253 @@ screen wells_menu_language():
                             hover_background Frame(Solid("#03d9ff44"), 4, 4)
                             selected_background Frame(Solid("#ff000d36"), 4, 4)
                             padding (6, 6)
+
+                    null height 10
+
+
+        # Botão PERFORMANCE
+        textbutton "PERFORMANCE":
+            xpos 650
+            ypos 560
+            xanchor 0.5
+            action [Show("menu_performance"), Hide("wells_menu_language")]
+            text_size 24 text_hover_color "#2bff00"
+            idle_background Frame(Solid("#2cff020a"), 4, 4) # Fundo suave
+            hover_background Frame(Solid("#03d9ff44"), 4, 4) # Brilha mais no mouse
+            padding (12, 12)
+
+        # Botão IDIOMAS
+        textbutton "LANG SELECT":
+            xpos 150
+            ypos 560
+            xanchor 0.5
+            action [Show("idioma_seletor"), Hide("wells_menu_language")]
+            text_size 24 text_hover_color "#2bff00"
+            idle_background Frame(Solid("#2cff020a"), 4, 4) # Fundo suave
+            hover_background Frame(Solid("#03d9ff44"), 4, 4) # Brilha mais no mouse
+            padding (12, 12)
+
+        # Botão IDIOMAS
+        textbutton "DIALOG":
+            xpos 400
+            ypos 560
+            xanchor 0.5
+            action [Show("dialogue_adjusts"), Hide("wells_menu_language")]
+            text_size 24 text_hover_color "#2bff00"
+            idle_background Frame(Solid("#2cff020a"), 4, 4) # Fundo suave
+            hover_background Frame(Solid("#03d9ff44"), 4, 4) # Brilha mais no mouse
+            padding (12, 12)
+
+
+        # --- RODAPÉ ---
+        null height 20
+        textbutton "FECHAR":
+            xpos 900
+            ypos 560
+            xanchor 0.5
+            action [Hide("wells_menu_language")]
+            text_size 24 text_hover_color "#2bff00"
+            idle_background Frame(Solid("#2cff020a"), 4, 4) # Fundo suave
+            hover_background Frame(Solid("#03d9ff44"), 4, 4) # Brilha mais no mouse
+            padding (12, 12)
+
+
+################################################################################
+##                           SCREEN IDIOMA SELETOR                            ##
+################################################################################
+
+screen idioma_seletor():
+    modal True
+    zorder 200
+    tag menu
+    add Solid("#00000080") # Escurece o que está atrás do menu
+
+    frame:
+        xalign 0.5 yalign 0.4
+        
+        # --- ALTERAÇÃO AQUI ---
+        # Substituímos o Solid pela sua imagem personalizada
+        background Frame("wells/frame_menu.png", 10, 10)
+        
+        # --- LÓGICA DE RESOLUÇÃO E MOBILE ---
+        if config.screen_width == 1920:
+            if renpy.variant("small"):
+                xsize 1600 ysize 950 padding (60, 50)
+            else:
+                xsize 1450 ysize 820 padding (50, 40)
+        else:
+            xsize 1150 ysize 680 padding (40, 35)
+
+        vbox:
+            xfill True
+            spacing 25
+            
+            text "LANGUAGE SELECTOR" xalign 0.5 size 42 color "#ff4444" outlines [(2, "#000", 0, 0)]
+
+            hbox:
+                xalign 0.5 spacing 60 # Espaçamento centralizado entre as colunas
+
+                vbox:
+                    spacing 20 xfill True
+
+                    hbox:
+                        xalign 0.5 spacing 40
+
+
+                        # --- COLUNA: DIALOGUE ---
+                        hbox:
+                            xalign 0.5 spacing 60 # Espaçamento centralizado entre as colunas
+
+                            # --- COLUNA 1: SISTEMA (IDIOMA E FONTES) ---
+
+                            vbox:
+                                xalign 0.5 spacing 10
+                                vbox:
+                                    spacing 2
+                                    # Ajuste dinâmico de largura mantendo sua lógica
+                                    if renpy.variant("small"):
+                                        xsize 400 # Adaptado para caber na coluna mobile
+                                    else:
+                                        xsize 380 
+
+                                    style_prefix "radio"
+                                    label _("TRANSLATION") xalign 0.5 text_size 26 text_color "#347bff"
+
+                                    $ langs = get_all_languages()
+                                    for lang in langs:
+                                        textbutton "[lang]".capitalize():
+                                            action Language(None if lang=="Default" else lang)
+                                            text_idle_color "#ffffff"
+                                            text_hover_color "#ff0000"
+                                            text_selected_idle_color "#2bff00"
+                                            text_selected_hover_color "#2bff00"
+                                            text_size 22
+                                            xalign 0.5
+
+                                    null height 2
+
+                            null height 10
+
+
+        # --- Botão para voltar ao Menu de Idiomas ---
+        null height 20
+        textbutton "Return":
+            xpos 900
+            ypos 590
+            xanchor 0.5
+            action (Show("wells_menu_language"))
+            text_size 24 text_hover_color "#2bff00"
+            idle_background Frame(Solid("#2cff020a"), 4, 4) # Fundo suave
+            hover_background Frame(Solid("#03d9ff44"), 4, 4) # Brilha mais no mouse
+            padding (12, 12)
+
+################################################################################
+##                           SCREEN DE DIALOGOS                               ##
+################################################################################
+
+screen dialogue_adjusts():
+    modal True
+    zorder 200
+    tag menu
+    add Solid("#00000080") # Escurece o que está atrás do menu
+
+    frame:
+        xalign 0.5 yalign 0.4
+        
+        # --- ALTERAÇÃO AQUI ---
+        # Substituímos o Solid pela sua imagem personalizada
+        background Frame("wells/frame_menu.png", 10, 10)
+        
+        # --- LÓGICA DE RESOLUÇÃO E MOBILE ---
+        if config.screen_width == 1920:
+            if renpy.variant("small"):
+                xsize 1600 ysize 950 padding (60, 50)
+            else:
+                xsize 1450 ysize 820 padding (50, 40)
+        else:
+            xsize 1150 ysize 680 padding (40, 35)
+
+        vbox:
+            xfill True
+            spacing 25
+            
+                # Título centralizado usando pixels inteiros
+            text "DIALOGUE MENU":
+                xpos 550
+                xanchor 0.5
+                ypos 25
+                size 42 
+                color "#ff4444" 
+                outlines [(2, "#000", 0, 0)]
+
+
+            # CONTEÚDO PRINCIPAL DIVIDIDO EM DUAS COLUNAS
+            hbox:
+                xalign 0.5
+                yalign 0.4
+                spacing 80 # Espaço entre a coluna esquerda e a direita
+
+                # COLUNA DA ESQUERDA (Barras + Configurações de Texto Organizadas)
+                hbox:
+                    spacing 30 # Espaço entre as duas subcolunas de barras
+                    yalign 0.0
+
+                    # SUBCOLUNA 1: Barras Principais de Diálogo
+                    vbox:
+                        spacing 15
+                        yalign 0.0
+                        
+                        vbox spacing 4:
+                            label _("Tam. Nome: [persistent.pref_text_size_label]") text_size 22 text_color "#2cf1ff"
+                            bar value FieldValue(persistent, 'pref_text_size_label', range=60, step=2) xsize 380
+                        
+                        vbox spacing 4:
+                            label _("Tam. Diálogo: [persistent.pref_text_size_dialogue]") text_size 22 text_color "#2cf1ff"
+                            bar value FieldValue(persistent, 'pref_text_size_dialogue', range=60, step=2) xsize 380
+                        
+                        vbox spacing 4:
+                            label _("Velocidade do texto") text_size 22 text_color "#2cf1ff"
+                            bar value Preference("text speed") xsize 380
+                        
+                        vbox spacing 4:
+                            label _("Tempo do texto") text_size 22 text_color "#2cf1ff"
+                            bar value Preference("auto-forward time") xsize 380
+
+                    # SUBCOLUNA 2: Ajustes Avançados de Escala e Espaçamento
+                    vbox:
+                        spacing 12
+                        yalign 0.0
+                        
+                        # Bloco Text Scaling
+                        vbox spacing 2:
+                            text "Text Scaling:" size 22 color "#2cf1ff" xalign 0.5
+                            bar value Preference("font size") xsize 320 xalign 0.5
+                            textbutton _("Reset Size"):
+                                action Preference("font size", 1.0)
+                                xalign 0.5 text_size 18 text_hover_color "#ff4444"
+
+                        # Bloco Line Spacing
+                        vbox spacing 2:
+                            text "Line Spacing:" size 22 color "#2cf1ff" xalign 0.5
+                            bar value FieldValue(persistent, "wells_line_spacing", range=50, offset=0) xsize 320 xalign 0.5
+                            textbutton _("Reset Spacing"):
+                                action Preference("font line spacing", 1.0)
+                                xalign 0.5 text_size 18 text_hover_color "#ff4444"
+
+                        # Bloco Dialogue V offset
+                        vbox spacing 2:
+                            text "Dialogue V offset:" size 22 color "#2cf1ff" xalign 0.5
+                            bar value FieldValue(persistent, "wells_dialogue_y_offset", range=100, offset=-50) xsize 320 xalign 0.5
+                            textbutton "Reiniciar Altura":
+                                action SetField(persistent, "wells_dialogue_y_offset", 0)
+                                xalign 0.5 text_size 18 text_hover_color "#ff4444"
+
+
+                    # Opções inferiores da Esquerda (Checkboxes + Radios emparelhados)
+                                # COLUNA DA DIREITA (Compatibilidade)
+                vbox:
+                    spacing 15
+                    yalign 0.0
 
                     # Seção CHECKBOXES
                     vbox spacing 8:
@@ -262,15 +466,12 @@ screen wells_menu_language():
                             hover_background Frame(Solid("#03d9ff44"), 4, 4)
                             padding (6, 6)
 
-                    vbox:
-                        spacing 4
-                        text "COMPATIBILIDADE" size 28 color "#3d8afd" xalign 0.5 
-                        textbutton "Dual Dialogue Fix: [persistent.wells_dual_dialogue_fix]":
+                        textbutton "Dual Diag. Fix: [persistent.wells_dual_dialogue_fix]":
                             action ToggleField(persistent, "wells_dual_dialogue_fix")
                             text_idle_color "#2bff00"
                             text_hover_color "#03d9ff44" 
                             text_color "#42bef8"
-                            text_size 26
+                            text_size 20
                             idle_background Frame(Solid("#2cff020a"), 4, 4)
                             hover_background Frame(Solid("#03d9ff44"), 4, 4)
                             padding (6, 6)
@@ -280,102 +481,69 @@ screen wells_menu_language():
                             text_idle_color ("#2bff00" if persistent.multiple_dialogue else "#ffffff")
                             text_hover_color "#03d9ff44" 
                             text_color "#42bef8"
-                            text_size 26
+                            text_size 20
                             idle_background Frame(Solid("#2cff020a"), 4, 4)
                             hover_background Frame(Solid("#03d9ff44"), 4, 4)
                             padding (6, 6)
 
-        # Botão EXTRAS
-        textbutton "EXTRAS":
-            xpos 1100
-            ypos 700
-            xalign 0.5
-            action [Show("menu_experimental"), Hide("wells_menu_language")]
-            text_size 24 text_hover_color "#2bff00"
-            idle_background Frame(Solid("#2cff020a"), 4, 4) # Fundo suave
-            hover_background Frame(Solid("#03d9ff44"), 4, 4) # Brilha mais no mouse
-            padding (12, 12)
 
 
-        # --- RODAPÉ ---
+            # RODAPÉ DE BOTÕES DE NAVEGAÇÃO
+        # --- Botão para voltar ao Menu principal ---
         null height 20
-        textbutton "FECHAR":
-            xpos 700
-            ypos 700
-            xalign 0.5
-            action [Hide("wells_menu_language")]
+        textbutton "Return":
+            xpos 550
+            ypos 590
+            xanchor 0.5
+            action (Show("wells_menu_language"))
             text_size 24 text_hover_color "#2bff00"
             idle_background Frame(Solid("#2cff020a"), 4, 4) # Fundo suave
             hover_background Frame(Solid("#03d9ff44"), 4, 4) # Brilha mais no mouse
             padding (12, 12)
 
 ################################################################################
-##                           SCREEN MENU EXTRA                                ##
+##                           SCREEN PERFORMANCE                               ##
 ################################################################################
 
-screen menu_experimental():
+screen menu_performance():
     modal True
     zorder 200
     tag menu
-    add Solid("#00000080") 
+    add Solid("#00000080") # Escurece o que está atrás do menu
 
     frame:
-        # --- LÓGICA DE RESOLUÇÃO E MOBILE ---
         xalign 0.5 yalign 0.4
+        
+        # --- ALTERAÇÃO AQUI ---
+        # Substituímos o Solid pela sua imagem personalizada
         background Frame("wells/frame_menu.png", 10, 10)
         
+        # --- LÓGICA DE RESOLUÇÃO E MOBILE ---
         if config.screen_width == 1920:
-            if renpy.variant("small"): # Versão Mobile/Tablet
+            if renpy.variant("small"):
                 xsize 1600 ysize 950 padding (60, 50)
-            else: # Versão PC Full HD
+            else:
                 xsize 1450 ysize 820 padding (50, 40)
-        else: # Versão 1280 (HD) ou outras resoluções menores
+        else:
             xsize 1150 ysize 680 padding (40, 35)
 
         vbox:
             xfill True
             spacing 25
             
-            # Título principal
-            text "EXTRA MENU" xalign 0.5 size 42 color "#ff4444" outlines [(2, "#000", 0, 0)]
+            text "PERFORMANCE" xalign 0.5 size 42 color "#ff4444" outlines [(2, "#000", 0, 0)]
 
             hbox:
                 xalign 0.5 spacing 60 # Espaçamento centralizado entre as colunas
 
                 vbox:
                     spacing 20 xfill True
-                    text "EXPERIMENTAL & PERFORMANCE" xalign 0.5 size 32 color "#ff4444"
 
                     hbox:
                         xalign 0.5 spacing 40
 
-                        # --- COLUNA 1: ADJUST (Sua configuração original) ---
 
-                        # Ajuste de Tamanho (Nativo do Ren'Py)
-                        vbox:
-                            spacing 8
-                            text "Text Scaling:" size 26 color "#2cf1ff" xalign 0.5
-                            bar value Preference("font size") xsize 350 xalign 0.5
-                            textbutton _("Reset Size"):
-                                action Preference("font size", 1.0)
-                                xalign 0.5 text_size 26 text_hover_color "#ff4444"
-
-                            text "Line Spacing:" size 26 color "#2cf1ff" xalign 0.5
-                            bar value FieldValue(persistent, "wells_line_spacing", range=50, offset=0) xsize 350 xalign 0.5
-                            textbutton _("Reset Spacing"):
-                                action Preference("font line spacing", 1.0)
-                                xalign 0.5 text_size 26 text_hover_color "#ff4444"
-
-                            text "Dialogue V offset:" size 26 color "#2cf1ff" xalign 0.5
-                            # O range de 100 com offset -50 permite subir ou descer o texto
-                            bar value FieldValue(persistent, "wells_dialogue_y_offset", range=100, offset=-50) xsize 350 xalign 0.5
-                            textbutton "Reiniciar Altura":
-                                action SetField(persistent, "wells_dialogue_y_offset", 0)
-                                xalign 0.5 text_size 26 text_hover_color "#ff4444"
-
-                        null height 5
-
-                        # --- COLUNA 3: SYSTEM & PERFORMANCE (Sua configuração original) ---
+                        # --- COLUNA:PERFORMANCE (configuração) ---
                         vbox:
                             xsize 400 spacing 10
                             text "SYSTEM" xalign 0.5 size 28 color "#3d8afd"
@@ -392,7 +560,7 @@ screen menu_experimental():
                                     text_size 28 
 
                                 $ gl_ps_status = "ON" if preferences.gl_powersave else "OFF"
-                                textbutton "Power Save: [gl_ps_status]":
+                                textbutton "Economia de energia: [gl_ps_status]":
                                     xalign 0.5
                                     action Preference("gl powersave", "toggle")
                                     text_hover_color "#2bff00"
@@ -400,7 +568,7 @@ screen menu_experimental():
 
                             vbox:
                                 spacing 5 xfill True
-                                text "VIDEO RENDERING" size 24 color "#aaa" xalign 0.5
+                                text "RENDERIZAÇÃO DE VÍDEO" size 24 color "#aaa" xalign 0.5
 
                                 $ hw_label = "Hardware (GPU)" if persistent.use_hw_video else "Software (CPU)"
                                 textbutton "Decoding: [hw_label]":
@@ -409,26 +577,15 @@ screen menu_experimental():
                                     text_hover_color "#00ccff"
                                     text_size 28 
 
-                                text "Use Software if you see a black screen" size 24 color "#666" xalign 0.5
-        # Botão EXTRAS
-        textbutton "EXTRAS":
-            xpos 1100
-            ypos 700
-            xalign 0.5
-            action [Show("menu_experimental"), Hide("wells_menu_language")]
-            text_size 24 text_hover_color "#2bff00"
-            idle_background Frame(Solid("#2cff020a"), 4, 4) # Fundo suave
-            hover_background Frame(Solid("#03d9ff44"), 4, 4) # Brilha mais no mouse
-            padding (12, 12)
-
-
+                                text "Use o software se você vir uma tela preta." size 28 color "#666" xalign 0.5
+       
         # --- Botão para voltar ao Menu de Idiomas ---
         null height 20
         textbutton "Return":
-            xpos 700
-            ypos 700
-            xalign 0.5
-            action (Show("wells_menu_language"), Hide("menu_experimental"))
+            xpos 550
+            ypos 560
+            xanchor 0.5
+            action (Show("wells_menu_language"))
             text_size 24 text_hover_color "#2bff00"
             idle_background Frame(Solid("#2cff020a"), 4, 4) # Fundo suave
             hover_background Frame(Solid("#03d9ff44"), 4, 4) # Brilha mais no mouse
@@ -457,7 +614,7 @@ screen quick_menu():
                 # Usamos Frame aqui também para garantir que o fundo encaixe no texto
                 background Frame("wells/quick_fechado.png", 10, 10) 
                 
-                xpos 14 yalign 1.0 
+                xpos 14 yanchor 1.0 
                 ypos 1.0 # Mantém no fundo
 
                 # Ajuste de Padding: (Esquerda, Topo, Direita, Baixo)
@@ -490,7 +647,7 @@ screen custom_menu_wells:
         # Os números (10, 10) mantêm os cantos da imagem protegidos.
         background Frame("wells/quick_aberto.png", 10, 10) 
         
-        xpos 14 yalign 1.0 
+        xpos 14 yanchor 1.0 
         ypos 1.0 # Mantém no fundo
         
         # AJUSTE DE MARGENS: (Esquerda, Topo, Direita, Baixo)
