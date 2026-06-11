@@ -1,0 +1,2 @@
+Jogar: Inicie o jogo e pressione a tecla Alt+W
+correspondente dentro do jogo para acessar as configurações.
